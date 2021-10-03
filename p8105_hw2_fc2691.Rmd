@@ -1,0 +1,76 @@
+---
+title: "p8105_hw2_fc2691"
+author: "FC"
+date: "10/3/2021"
+output: html_document
+---
+
+## Problem 1  
+
+This problem uses the Mr. Trash Wheel dataset, available as an Excel file on the course website.  
+
+Read and clean the Mr. Trash Wheel sheet:
+
+- specify the sheet in the Excel file and to omit non-data entries (rows with notes / figures; columns containing notes) using arguments in read_excel
+- use reasonable variable names
+- omit rows that do not include dumpster-specific data
+- round the number of sports balls to the nearest integer  
+
+Read and clean precipitation data for 2018 and 2019. For each, omit rows without precipitation data and add a variable for year. Next, combine precipitation datasets and convert month to a character variable (the variable month.name is built into R and should be useful).
+
+Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2019?
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+# 
+# #Clean the data in Mr. Trash Wheel Sheet. 
+# 
+# mr_trash_wheel_sheet =
+#   readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx") %>%
+#   janitor::clean_names() %>% 
+#   drop_na(dumpster) %>% 
+#   mutate_if(is.numeric, round) %>% 
+#   select(year == 2018 & year ==2019)
+#   
+# mr_trash_wheel_sheet
+# ```
+
+```{r}
+library(tidyr)
+pols_month = 
+  read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>% 
+  janitor::clean_names() %>% 
+  separate(
+    col = mon, into = c("year", "month", "day"), sep = "-"
+    ) %>% 
+  mutate(month = month.abb[as.numeric(month)]) %>% 
+  pivot_longer(
+    prez_gop:rep_dem,
+    names_to = "president", 
+    values_to = "number") %>%  
+  filter(
+    president != "prez_dem" & president != "prez_gop"
+  ) %>% 
+  select(-day)
+  
+pols_month
+
+
+# #clean the data in snp.csv
+# snp_data = 
+#   read_csv("./data/fivethirtyeight_datasets/snp.csv") %>% 
+#   janitor::clean_names() %>% 
+#   separate(
+#     col = date, into = c("month", "day", "year"), sep = "/"
+#     ) %>%
+#   mutate(month = month.abb[as.numeric(month)]) %>%
+#   arrange(year, month) %>%
+#   select(year, month, everything()) %>%
+#   select(-day)
+# 
+# snp_data
+```
+
