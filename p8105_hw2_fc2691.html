@@ -224,88 +224,64 @@ mr_trash_wheel_sheet</code></pre>
 ## #   grocery_bags &lt;dbl&gt;, chip_bags &lt;dbl&gt;, sports_balls &lt;dbl&gt;,
 ## #   homes_powered &lt;dbl&gt;</code></pre>
 <pre class="r"><code>#clean precipitation data for 2018 and 2019
+
+#Reorganize precipitation data for 2018
 precipitation_data_2018 = 
   readxl::read_excel(&quot;./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx&quot;, sheet = &quot;2018 Precipitation&quot;, range = &quot;A2:B15&quot;) %&gt;% 
   janitor::clean_names() %&gt;%
   drop_na() %&gt;% 
   mutate(year = 2018)
 
-precipitation_data_2018</code></pre>
-<pre><code>## # A tibble: 12 × 3
-##    month total  year
-##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-##  1     1  0.94  2018
-##  2     2  4.8   2018
-##  3     3  2.69  2018
-##  4     4  4.69  2018
-##  5     5  9.27  2018
-##  6     6  4.77  2018
-##  7     7 10.2   2018
-##  8     8  6.45  2018
-##  9     9 10.5   2018
-## 10    10  2.12  2018
-## 11    11  7.82  2018
-## 12    12  6.11  2018</code></pre>
-<pre class="r"><code>precipitation_data_2019 = 
+##Reorganize precipitation data for 2019
+precipitation_data_2019 = 
   readxl::read_excel(&quot;./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx&quot;, sheet = &quot;2019 Precipitation&quot;, range = &quot;A2:B15&quot;) %&gt;% 
   janitor::clean_names() %&gt;%
   drop_na() %&gt;% 
   mutate(year = 2019)
 
-precipitation_data_2019</code></pre>
-<pre><code>## # A tibble: 6 × 3
-##   month total  year
-##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1     1  3.1   2019
-## 2     2  3.64  2019
-## 3     3  4.47  2019
-## 4     4  1.46  2019
-## 5     5  3.58  2019
-## 6     6  0.42  2019</code></pre>
-<pre class="r"><code>precipitation_data_clean = 
+precipitation_data_clean = 
   full_join(
     precipitation_data_2018, precipitation_data_2019
   ) %&gt;% 
-  mutate(month.name = as.character(month))</code></pre>
+  mutate(month.name = as.character(month)) %&gt;% 
+  relocate(year, month, month.name, total)</code></pre>
 <pre><code>## Joining, by = c(&quot;month&quot;, &quot;total&quot;, &quot;year&quot;)</code></pre>
 <pre class="r"><code>precipitation_data_clean</code></pre>
 <pre><code>## # A tibble: 18 × 4
-##    month total  year month.name
-##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;     
-##  1     1  0.94  2018 1         
-##  2     2  4.8   2018 2         
-##  3     3  2.69  2018 3         
-##  4     4  4.69  2018 4         
-##  5     5  9.27  2018 5         
-##  6     6  4.77  2018 6         
-##  7     7 10.2   2018 7         
-##  8     8  6.45  2018 8         
-##  9     9 10.5   2018 9         
-## 10    10  2.12  2018 10        
-## 11    11  7.82  2018 11        
-## 12    12  6.11  2018 12        
-## 13     1  3.1   2019 1         
-## 14     2  3.64  2019 2         
-## 15     3  4.47  2019 3         
-## 16     4  1.46  2019 4         
-## 17     5  3.58  2019 5         
-## 18     6  0.42  2019 6</code></pre>
-<pre class="r"><code>library(tidyr)
-pols_month = 
+##     year month month.name total
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt;
+##  1  2018     1 1           0.94
+##  2  2018     2 2           4.8 
+##  3  2018     3 3           2.69
+##  4  2018     4 4           4.69
+##  5  2018     5 5           9.27
+##  6  2018     6 6           4.77
+##  7  2018     7 7          10.2 
+##  8  2018     8 8           6.45
+##  9  2018     9 9          10.5 
+## 10  2018    10 10          2.12
+## 11  2018    11 11          7.82
+## 12  2018    12 12          6.11
+## 13  2019     1 1           3.1 
+## 14  2019     2 2           3.64
+## 15  2019     3 3           4.47
+## 16  2019     4 4           1.46
+## 17  2019     5 5           3.58
+## 18  2019     6 6           0.42</code></pre>
+<p>` Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2019?</p>
+<p>`</p>
+<pre class="r"><code>#Clean the data in pols-month.csv
+
+library(tidyr)
+pols_month_number = 
   read_csv(&quot;./data/fivethirtyeight_datasets/pols-month.csv&quot;) %&gt;% 
   janitor::clean_names() %&gt;% 
   separate(
     col = mon, into = c(&quot;year&quot;, &quot;month&quot;, &quot;day&quot;), sep = &quot;-&quot;
-    ) %&gt;%
+    ) %&gt;% 
   mutate(month = month.abb[as.numeric(month)]) %&gt;%
-  pivot_longer(
-    prez_gop:rep_dem,
-    names_to = &quot;president&quot;,
-    values_to = &quot;number&quot;) %&gt;%
-  filter(
-    president != &quot;prez_dem&quot; &amp; president != &quot;prez_gop&quot;
-  ) %&gt;%
-  select(-day)</code></pre>
+  mutate(president = ifelse(prez_gop == 1, &quot;gop&quot;, &quot;dem&quot;)) %&gt;% 
+  select(-prez_gop, -prez_dem, -day)</code></pre>
 <pre><code>## Rows: 822 Columns: 9</code></pre>
 <pre><code>## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
@@ -314,25 +290,25 @@ pols_month =
 <pre><code>## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>pols_month</code></pre>
-<pre><code>## # A tibble: 4,932 × 4
-##    year  month president number
-##    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
-##  1 1947  Jan   gov_gop       23
-##  2 1947  Jan   sen_gop       51
-##  3 1947  Jan   rep_gop      253
-##  4 1947  Jan   gov_dem       23
-##  5 1947  Jan   sen_dem       45
-##  6 1947  Jan   rep_dem      198
-##  7 1947  Feb   gov_gop       23
-##  8 1947  Feb   sen_gop       51
-##  9 1947  Feb   rep_gop      253
-## 10 1947  Feb   gov_dem       23
-## # … with 4,922 more rows</code></pre>
-<pre class="r"><code>#clean the data in snp.csv
+<pre class="r"><code>pols_month_number</code></pre>
+<pre><code>## # A tibble: 822 × 9
+##    year  month gov_gop sen_gop rep_gop gov_dem sen_dem rep_dem president
+##    &lt;chr&gt; &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;    
+##  1 1947  Jan        23      51     253      23      45     198 dem      
+##  2 1947  Feb        23      51     253      23      45     198 dem      
+##  3 1947  Mar        23      51     253      23      45     198 dem      
+##  4 1947  Apr        23      51     253      23      45     198 dem      
+##  5 1947  May        23      51     253      23      45     198 dem      
+##  6 1947  Jun        23      51     253      23      45     198 dem      
+##  7 1947  Jul        23      51     253      23      45     198 dem      
+##  8 1947  Aug        23      51     253      23      45     198 dem      
+##  9 1947  Sep        23      51     253      23      45     198 dem      
+## 10 1947  Oct        23      51     253      23      45     198 dem      
+## # … with 812 more rows</code></pre>
+<pre class="r"><code>#Clean the data in snp.csv
 
 
-snp_data =
+snp_stock =
   read_csv(&quot;./data/fivethirtyeight_datasets/snp.csv&quot;) %&gt;%
   janitor::clean_names() %&gt;% 
   mutate(date = as.Date(date, &quot;%m/%d/%y&quot;)) %&gt;% 
@@ -351,7 +327,7 @@ snp_data =
 <pre><code>## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>snp_data</code></pre>
+<pre class="r"><code>snp_stock</code></pre>
 <pre><code>## # A tibble: 787 × 3
 ##    year  month close
 ##    &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;
@@ -366,6 +342,109 @@ snp_data =
 ##  9 1969  May   103. 
 ## 10 1969  Nov    93.8
 ## # … with 777 more rows</code></pre>
+<pre class="r"><code># Tidy the unemployment data so that it can be merged with the previous datasets.
+
+unemployment_percentage =
+  read_csv(&quot;./data/fivethirtyeight_datasets/unemployment.csv&quot;) %&gt;%
+  janitor::clean_names() %&gt;% 
+  pivot_longer(
+    jan:dec, 
+    names_to = &quot;month&quot;, 
+    values_to = &quot;month_data&quot;
+  ) %&gt;% 
+  mutate(year = as.character(year))</code></pre>
+<pre><code>## Rows: 68 Columns: 13</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## dbl (13): Year, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>unemployment_percentage</code></pre>
+<pre><code>## # A tibble: 816 × 3
+##    year  month month_data
+##    &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
+##  1 1948  jan          3.4
+##  2 1948  feb          3.8
+##  3 1948  mar          4  
+##  4 1948  apr          3.9
+##  5 1948  may          3.5
+##  6 1948  jun          3.6
+##  7 1948  jul          3.6
+##  8 1948  aug          3.9
+##  9 1948  sep          3.8
+## 10 1948  oct          3.7
+## # … with 806 more rows</code></pre>
+<pre class="r"><code>#Join the datasets by merging snp into pols, and merging unemployment into the result.
+
+pols_snp_unemployment_merge = full_join(full_join(pols_month_number, snp_stock), unemployment_percentage)</code></pre>
+<pre><code>## Joining, by = c(&quot;year&quot;, &quot;month&quot;)</code></pre>
+<pre><code>## Joining, by = c(&quot;year&quot;, &quot;month&quot;)</code></pre>
+<pre class="r"><code>pols_snp_unemployment_merge</code></pre>
+<pre><code>## # A tibble: 1,867 × 11
+##    year  month gov_gop sen_gop rep_gop gov_dem sen_dem rep_dem president close
+##    &lt;chr&gt; &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+##  1 1947  Jan        23      51     253      23      45     198 dem          NA
+##  2 1947  Feb        23      51     253      23      45     198 dem          NA
+##  3 1947  Mar        23      51     253      23      45     198 dem          NA
+##  4 1947  Apr        23      51     253      23      45     198 dem          NA
+##  5 1947  May        23      51     253      23      45     198 dem          NA
+##  6 1947  Jun        23      51     253      23      45     198 dem          NA
+##  7 1947  Jul        23      51     253      23      45     198 dem          NA
+##  8 1947  Aug        23      51     253      23      45     198 dem          NA
+##  9 1947  Sep        23      51     253      23      45     198 dem          NA
+## 10 1947  Oct        23      51     253      23      45     198 dem          NA
+## # … with 1,857 more rows, and 1 more variable: month_data &lt;dbl&gt;</code></pre>
+</div>
+<div id="problem-3" class="section level2">
+<h2>Problem 3</h2>
+<p>Load and tidy the data.<br />
+Produce a well-structured, reader-friendly table showing the rank in popularity of the name “Olivia” as a female baby name over time; this should have rows for ethnicities and columns for year. Produce a similar table showing the most popular name among male children over time.</p>
+<p>Finally, for male, white non-hispanic children born in 2016, produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis).</p>
+<pre class="r"><code># Load the data and remove the duplicates. 
+
+popular_baby_names =
+  read_csv(&quot;./data/Popular_Baby_Names.csv&quot;) %&gt;%
+  janitor::clean_names() %&gt;% 
+  distinct() %&gt;% 
+  #Showing the rank in popularity of the name “Olivia” as a female baby name over time
+  filter(gender == &quot;FEMALE&quot; &amp; childs_first_name == &quot;Olivia&quot;) %&gt;% 
+  select(-gender) %&gt;% 
+  pivot_wider(
+    names_from = c(ethnicity), 
+    values_from = c(year_of_birth)
+    )</code></pre>
+<pre><code>## Rows: 19418 Columns: 6</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (3): Gender, Ethnicity, Child&#39;s First Name
+## dbl (3): Year of Birth, Count, Rank</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>  # split(.$gender)
+
+popular_baby_names</code></pre>
+<pre><code>## # A tibble: 16 × 7
+##    childs_first_name count  rank `ASIAN AND PACIFIC … `BLACK NON HISPA… HISPANIC
+##    &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt;                &lt;dbl&gt;             &lt;dbl&gt;    &lt;dbl&gt;
+##  1 Olivia              172     1                 2016                NA       NA
+##  2 Olivia               49     8                   NA              2016       NA
+##  3 Olivia              108    13                   NA                NA     2016
+##  4 Olivia              230     1                   NA                NA       NA
+##  5 Olivia              188     1                 2015                NA       NA
+##  6 Olivia               82     4                   NA              2015       NA
+##  7 Olivia               94    16                   NA                NA     2015
+##  8 Olivia              225     1                   NA                NA       NA
+##  9 Olivia              141     1                 2014                NA       NA
+## 10 Olivia               52     8                   NA              2014       NA
+## 11 Olivia               96    16                   NA                NA     2014
+## 12 Olivia              248     1                   NA                NA       NA
+## 13 Olivia              109     3                 2013                NA       NA
+## 14 Olivia               64     6                   NA              2013       NA
+## 15 Olivia               87    22                   NA                NA     2013
+## 16 Olivia              233     1                   NA                NA       NA
+## # … with 1 more variable: WHITE NON HISPANIC &lt;dbl&gt;</code></pre>
 </div>
 
 

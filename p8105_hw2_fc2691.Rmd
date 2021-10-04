@@ -38,55 +38,55 @@ mr_trash_wheel_sheet =
 mr_trash_wheel_sheet
 
 #clean precipitation data for 2018 and 2019
+
+#Reorganize precipitation data for 2018
 precipitation_data_2018 = 
   readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2018 Precipitation", range = "A2:B15") %>% 
   janitor::clean_names() %>%
   drop_na() %>% 
   mutate(year = 2018)
 
-precipitation_data_2018
-
+##Reorganize precipitation data for 2019
 precipitation_data_2019 = 
   readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2019 Precipitation", range = "A2:B15") %>% 
   janitor::clean_names() %>%
   drop_na() %>% 
   mutate(year = 2019)
 
-precipitation_data_2019
-
 precipitation_data_clean = 
   full_join(
     precipitation_data_2018, precipitation_data_2019
   ) %>% 
-  mutate(month.name = as.character(month))
+  mutate(month.name = as.character(month)) %>% 
+  relocate(year, month, month.name, total)
+
 precipitation_data_clean
 ```
+`
+Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2019?
 
+`
 ```{r}
+#Clean the data in pols-month.csv
+
 library(tidyr)
-pols_month = 
+pols_month_number = 
   read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>% 
   janitor::clean_names() %>% 
   separate(
     col = mon, into = c("year", "month", "day"), sep = "-"
-    ) %>%
+    ) %>% 
   mutate(month = month.abb[as.numeric(month)]) %>%
-  pivot_longer(
-    prez_gop:rep_dem,
-    names_to = "president",
-    values_to = "number") %>%
-  filter(
-    president != "prez_dem" & president != "prez_gop"
-  ) %>%
-  select(-day)
+  mutate(president = ifelse(prez_gop == 1, "gop", "dem")) %>% 
+  select(-prez_gop, -prez_dem, -day)
 
-pols_month
+pols_month_number
 
 
-#clean the data in snp.csv
+#Clean the data in snp.csv
 
 
-snp_data =
+snp_stock =
   read_csv("./data/fivethirtyeight_datasets/snp.csv") %>%
   janitor::clean_names() %>% 
   mutate(date = as.Date(date, "%m/%d/%y")) %>% 
@@ -97,7 +97,54 @@ snp_data =
   arrange(year, month) %>%
   relocate(year, month, everything()) %>%
   select(-day)
-snp_data
+snp_stock
 
+# Tidy the unemployment data so that it can be merged with the previous datasets.
+
+unemployment_percentage =
+  read_csv("./data/fivethirtyeight_datasets/unemployment.csv") %>%
+  janitor::clean_names() %>% 
+  pivot_longer(
+    jan:dec, 
+    names_to = "month", 
+    values_to = "month_data"
+  ) %>% 
+  mutate(year = as.character(year))
+
+unemployment_percentage
+
+#Join the datasets by merging snp into pols, and merging unemployment into the result.
+
+pols_snp_unemployment_merge = full_join(full_join(pols_month_number, snp_stock), unemployment_percentage)
+
+pols_snp_unemployment_merge
 ```
+
+## Problem 3  
+
+Load and tidy the data.   
+Produce a well-structured, reader-friendly table showing the rank in popularity of the name “Olivia” as a female baby name over time; this should have rows for ethnicities and columns for year. Produce a similar table showing the most popular name among male children over time.
+
+Finally, for male, white non-hispanic children born in 2016, produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis).
+```{r}
+# Load the data and remove the duplicates. 
+
+popular_baby_names =
+  read_csv("./data/Popular_Baby_Names.csv") %>%
+  janitor::clean_names() %>% 
+  distinct() %>% 
+  #Showing the rank in popularity of the name “Olivia” as a female baby name over time
+  filter(gender == "FEMALE" & childs_first_name == "Olivia") %>% 
+  select(-gender) %>% 
+  pivot_wider(
+    names_from = c(ethnicity), 
+    values_from = c(year_of_birth)
+    )
+
+  # split(.$gender)
+
+popular_baby_names
+```
+
+
 
