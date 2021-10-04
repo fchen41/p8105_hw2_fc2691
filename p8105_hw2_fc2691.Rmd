@@ -69,33 +69,35 @@ pols_month =
   janitor::clean_names() %>% 
   separate(
     col = mon, into = c("year", "month", "day"), sep = "-"
-    ) %>% 
-  mutate(month = month.abb[as.numeric(month)]) %>% 
+    ) %>%
+  mutate(month = month.abb[as.numeric(month)]) %>%
   pivot_longer(
     prez_gop:rep_dem,
-    names_to = "president", 
-    values_to = "number") %>%  
+    names_to = "president",
+    values_to = "number") %>%
   filter(
     president != "prez_dem" & president != "prez_gop"
-  ) %>% 
+  ) %>%
   select(-day)
-  
+
 pols_month
 
 
 #clean the data in snp.csv
-#Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
-# snp_data =
-#   read_csv("./data/fivethirtyeight_datasets/snp.csv") %>%
-#   janitor::clean_names() %>%
-#   separate(
-#     col = date, into = c("month", "day", "year"), sep = "/"
-#     ) %>%
-#   mutate(month = month.abb[as.numeric(month)]) %>%
-#   arrange(year, month) %>%
-#   relocate(year, month, everything()) %>%
-#   select(-day)
-# 
-# snp_data
+
+
+snp_data =
+  read_csv("./data/fivethirtyeight_datasets/snp.csv") %>%
+  janitor::clean_names() %>% 
+  mutate(date = as.Date(date, "%m/%d/%y")) %>% 
+  separate(
+    col = date, into = c("year", "month", "day"), sep = "-"
+    ) %>%
+  mutate(month = month.abb[as.numeric(month)]) %>%
+  arrange(year, month) %>%
+  relocate(year, month, everything()) %>%
+  select(-day)
+snp_data
+
 ```
 

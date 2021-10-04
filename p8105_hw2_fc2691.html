@@ -197,7 +197,6 @@ library(tidyverse)</code></pre>
 library(tidyr)
 # 
 # #Clean the data in Mr. Trash Wheel Sheet. 
-#
 mr_trash_wheel_sheet =
   readxl::read_excel(&quot;./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx&quot;, range = &quot;A2:N408&quot;) %&gt;%
   janitor::clean_names() %&gt;%
@@ -224,21 +223,88 @@ mr_trash_wheel_sheet</code></pre>
 ## #   polystyrene &lt;dbl&gt;, cigarette_butts &lt;dbl&gt;, glass_bottles &lt;dbl&gt;,
 ## #   grocery_bags &lt;dbl&gt;, chip_bags &lt;dbl&gt;, sports_balls &lt;dbl&gt;,
 ## #   homes_powered &lt;dbl&gt;</code></pre>
+<pre class="r"><code>#clean precipitation data for 2018 and 2019
+precipitation_data_2018 = 
+  readxl::read_excel(&quot;./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx&quot;, sheet = &quot;2018 Precipitation&quot;, range = &quot;A2:B15&quot;) %&gt;% 
+  janitor::clean_names() %&gt;%
+  drop_na() %&gt;% 
+  mutate(year = 2018)
+
+precipitation_data_2018</code></pre>
+<pre><code>## # A tibble: 12 × 3
+##    month total  year
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1     1  0.94  2018
+##  2     2  4.8   2018
+##  3     3  2.69  2018
+##  4     4  4.69  2018
+##  5     5  9.27  2018
+##  6     6  4.77  2018
+##  7     7 10.2   2018
+##  8     8  6.45  2018
+##  9     9 10.5   2018
+## 10    10  2.12  2018
+## 11    11  7.82  2018
+## 12    12  6.11  2018</code></pre>
+<pre class="r"><code>precipitation_data_2019 = 
+  readxl::read_excel(&quot;./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx&quot;, sheet = &quot;2019 Precipitation&quot;, range = &quot;A2:B15&quot;) %&gt;% 
+  janitor::clean_names() %&gt;%
+  drop_na() %&gt;% 
+  mutate(year = 2019)
+
+precipitation_data_2019</code></pre>
+<pre><code>## # A tibble: 6 × 3
+##   month total  year
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     1  3.1   2019
+## 2     2  3.64  2019
+## 3     3  4.47  2019
+## 4     4  1.46  2019
+## 5     5  3.58  2019
+## 6     6  0.42  2019</code></pre>
+<pre class="r"><code>precipitation_data_clean = 
+  full_join(
+    precipitation_data_2018, precipitation_data_2019
+  ) %&gt;% 
+  mutate(month.name = as.character(month))</code></pre>
+<pre><code>## Joining, by = c(&quot;month&quot;, &quot;total&quot;, &quot;year&quot;)</code></pre>
+<pre class="r"><code>precipitation_data_clean</code></pre>
+<pre><code>## # A tibble: 18 × 4
+##    month total  year month.name
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;     
+##  1     1  0.94  2018 1         
+##  2     2  4.8   2018 2         
+##  3     3  2.69  2018 3         
+##  4     4  4.69  2018 4         
+##  5     5  9.27  2018 5         
+##  6     6  4.77  2018 6         
+##  7     7 10.2   2018 7         
+##  8     8  6.45  2018 8         
+##  9     9 10.5   2018 9         
+## 10    10  2.12  2018 10        
+## 11    11  7.82  2018 11        
+## 12    12  6.11  2018 12        
+## 13     1  3.1   2019 1         
+## 14     2  3.64  2019 2         
+## 15     3  4.47  2019 3         
+## 16     4  1.46  2019 4         
+## 17     5  3.58  2019 5         
+## 18     6  0.42  2019 6</code></pre>
 <pre class="r"><code>library(tidyr)
 pols_month = 
   read_csv(&quot;./data/fivethirtyeight_datasets/pols-month.csv&quot;) %&gt;% 
   janitor::clean_names() %&gt;% 
   separate(
     col = mon, into = c(&quot;year&quot;, &quot;month&quot;, &quot;day&quot;), sep = &quot;-&quot;
-    ) %&gt;% 
-  mutate(month = month.abb[as.numeric(month)]) %&gt;% 
+    ) %&gt;%
+  mutate(month = month.abb[as.numeric(month)]) %&gt;%
   pivot_longer(
     prez_gop:rep_dem,
-    names_to = &quot;president&quot;, 
-    values_to = &quot;number&quot;) %&gt;%  
+    names_to = &quot;president&quot;,
+    values_to = &quot;number&quot;) %&gt;%
   filter(
     president != &quot;prez_dem&quot; &amp; president != &quot;prez_gop&quot;
-  ) %&gt;% 
+  ) %&gt;%
   select(-day)</code></pre>
 <pre><code>## Rows: 822 Columns: 9</code></pre>
 <pre><code>## ── Column specification ────────────────────────────────────────────────────────
@@ -264,19 +330,42 @@ pols_month =
 ## 10 1947  Feb   gov_dem       23
 ## # … with 4,922 more rows</code></pre>
 <pre class="r"><code>#clean the data in snp.csv
-#Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
-# snp_data =
-#   read_csv(&quot;./data/fivethirtyeight_datasets/snp.csv&quot;) %&gt;%
-#   janitor::clean_names() %&gt;%
-#   separate(
-#     col = date, into = c(&quot;month&quot;, &quot;day&quot;, &quot;year&quot;), sep = &quot;/&quot;
-#     ) %&gt;%
-#   mutate(month = month.abb[as.numeric(month)]) %&gt;%
-#   arrange(year, month) %&gt;%
-#   select(year, month, everything(), -day) %&gt;%
-#   select(-day)
-# 
-# snp_data</code></pre>
+
+
+snp_data =
+  read_csv(&quot;./data/fivethirtyeight_datasets/snp.csv&quot;) %&gt;%
+  janitor::clean_names() %&gt;% 
+  mutate(date = as.Date(date, &quot;%m/%d/%y&quot;)) %&gt;% 
+  separate(
+    col = date, into = c(&quot;year&quot;, &quot;month&quot;, &quot;day&quot;), sep = &quot;-&quot;
+    ) %&gt;%
+  mutate(month = month.abb[as.numeric(month)]) %&gt;%
+  arrange(year, month) %&gt;%
+  relocate(year, month, everything()) %&gt;%
+  select(-day)</code></pre>
+<pre><code>## Rows: 787 Columns: 2</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (1): date
+## dbl (1): close</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>snp_data</code></pre>
+<pre><code>## # A tibble: 787 × 3
+##    year  month close
+##    &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;
+##  1 1969  Apr   104. 
+##  2 1969  Aug    95.5
+##  3 1969  Dec    92.1
+##  4 1969  Feb    98.1
+##  5 1969  Jan   103. 
+##  6 1969  Jul    91.8
+##  7 1969  Jun    97.7
+##  8 1969  Mar   102. 
+##  9 1969  May   103. 
+## 10 1969  Nov    93.8
+## # … with 777 more rows</code></pre>
 </div>
 
 
