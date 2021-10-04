@@ -27,7 +27,6 @@ library(dplyr)
 library(tidyr)
 # 
 # #Clean the data in Mr. Trash Wheel Sheet. 
-#
 mr_trash_wheel_sheet =
   readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", range = "A2:N408") %>%
   janitor::clean_names() %>%
@@ -37,6 +36,30 @@ mr_trash_wheel_sheet =
   mutate(month = month.name[as.character(month)])
 
 mr_trash_wheel_sheet
+
+#clean precipitation data for 2018 and 2019
+precipitation_data_2018 = 
+  readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2018 Precipitation", range = "A2:B15") %>% 
+  janitor::clean_names() %>%
+  drop_na() %>% 
+  mutate(year = 2018)
+
+precipitation_data_2018
+
+precipitation_data_2019 = 
+  readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2019 Precipitation", range = "A2:B15") %>% 
+  janitor::clean_names() %>%
+  drop_na() %>% 
+  mutate(year = 2019)
+
+precipitation_data_2019
+
+precipitation_data_clean = 
+  full_join(
+    precipitation_data_2018, precipitation_data_2019
+  ) %>% 
+  mutate(month.name = as.character(month))
+precipitation_data_clean
 ```
 
 ```{r}
@@ -70,7 +93,7 @@ pols_month
 #     ) %>%
 #   mutate(month = month.abb[as.numeric(month)]) %>%
 #   arrange(year, month) %>%
-#   select(year, month, everything(), -day) %>%
+#   relocate(year, month, everything()) %>%
 #   select(-day)
 # 
 # snp_data
