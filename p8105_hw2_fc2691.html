@@ -408,10 +408,10 @@ popular_baby_names =
   janitor::clean_names() %&gt;% 
   distinct() %&gt;% 
   #Showing the rank in popularity of the name “Olivia” as a female baby name over time
-  filter(gender == &quot;FEMALE&quot; &amp; childs_first_name == &quot;Olivia&quot;) %&gt;% 
-  select(-gender) %&gt;% 
+  filter(gender == &quot;FEMALE&quot; &amp; childs_first_name == &quot;Olivia&quot;) %&gt;%
+  select(-gender) %&gt;%
   pivot_wider(
-    names_from = c(ethnicity), 
+    names_from = c(ethnicity),
     values_from = c(year_of_birth)
     )</code></pre>
 <pre><code>## Rows: 19418 Columns: 6</code></pre>
@@ -422,9 +422,7 @@ popular_baby_names =
 <pre><code>## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>  # split(.$gender)
-
-popular_baby_names</code></pre>
+<pre class="r"><code>popular_baby_names</code></pre>
 <pre><code>## # A tibble: 16 × 7
 ##    childs_first_name count  rank `ASIAN AND PACIFIC … `BLACK NON HISPA… HISPANIC
 ##    &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt;                &lt;dbl&gt;             &lt;dbl&gt;    &lt;dbl&gt;
@@ -445,6 +443,42 @@ popular_baby_names</code></pre>
 ## 15 Olivia               87    22                   NA                NA     2013
 ## 16 Olivia              233     1                   NA                NA       NA
 ## # … with 1 more variable: WHITE NON HISPANIC &lt;dbl&gt;</code></pre>
+<pre class="r"><code>popular_male_baby_names_count =
+  read_csv(&quot;./data/Popular_Baby_Names.csv&quot;) %&gt;%
+  janitor::clean_names() %&gt;% 
+  mutate(
+    gender = str_to_title(gender), 
+    ethnicity = str_to_title(ethnicity), 
+    childs_first_name = str_to_title(childs_first_name)
+    ) %&gt;% 
+  distinct() %&gt;% 
+  filter(gender == &quot;Male&quot;) %&gt;% 
+  group_by(childs_first_name) %&gt;%
+  summarise(total_count = sum(count)) %&gt;% 
+  arrange(desc(total_count))</code></pre>
+<pre><code>## Rows: 19418 Columns: 6</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (3): Gender, Ethnicity, Child&#39;s First Name
+## dbl (3): Year of Birth, Count, Rank</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>popular_male_baby_names_count</code></pre>
+<pre><code>## # A tibble: 830 × 2
+##    childs_first_name total_count
+##    &lt;chr&gt;                   &lt;dbl&gt;
+##  1 Ethan                    4245
+##  2 Jacob                    3994
+##  3 Jayden                   3954
+##  4 Daniel                   3463
+##  5 Matthew                  3327
+##  6 Michael                  3279
+##  7 David                    3239
+##  8 Noah                     3231
+##  9 Liam                     3226
+## 10 Aiden                    3155
+## # … with 820 more rows</code></pre>
 </div>
 
 

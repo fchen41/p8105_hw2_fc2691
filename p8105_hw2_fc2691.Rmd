@@ -134,16 +134,29 @@ popular_baby_names =
   janitor::clean_names() %>% 
   distinct() %>% 
   #Showing the rank in popularity of the name “Olivia” as a female baby name over time
-  filter(gender == "FEMALE" & childs_first_name == "Olivia") %>% 
-  select(-gender) %>% 
+  filter(gender == "FEMALE" & childs_first_name == "Olivia") %>%
+  select(-gender) %>%
   pivot_wider(
-    names_from = c(ethnicity), 
+    names_from = c(ethnicity),
     values_from = c(year_of_birth)
     )
 
-  # split(.$gender)
-
 popular_baby_names
+
+popular_male_baby_names_count =
+  read_csv("./data/Popular_Baby_Names.csv") %>%
+  janitor::clean_names() %>% 
+  mutate(
+    gender = str_to_title(gender), 
+    ethnicity = str_to_title(ethnicity), 
+    childs_first_name = str_to_title(childs_first_name)
+    ) %>% 
+  distinct() %>% 
+  filter(gender == "Male") %>% 
+  group_by(childs_first_name) %>%
+  summarise(total_count = sum(count)) %>% 
+  arrange(desc(total_count))
+popular_male_baby_names_count
 ```
 
 
