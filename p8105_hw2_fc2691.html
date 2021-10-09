@@ -263,7 +263,12 @@ precipitation_data_clean =
 </div>
 <div id="problem-2" class="section level2">
 <h2>Problem 2</h2>
-<p>This problem uses the <em>FiveThirtyEight</em> data; these data were gathered to create the interactive graphic on this page. In particular,</p>
+<p>This problem uses the <em>FiveThirtyEight</em> data; these data were gathered to create the interactive graphic on this page.</p>
+<ul>
+<li>First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.<br />
+</li>
+<li>Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.</li>
+</ul>
 <pre class="r"><code>#Clean the data in pols-month.csv
 
 library(tidyr)

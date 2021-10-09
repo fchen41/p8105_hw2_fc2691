@@ -66,7 +66,10 @@ In Mr.Trash Wheel sheet, there are data from 2014 to 2021 with 14 variables and 
 
 ## Problem 2  
 
-This problem uses the *FiveThirtyEight* data; these data were gathered to create the interactive graphic on this page. In particular, 
+This problem uses the *FiveThirtyEight* data; these data were gathered to create the interactive graphic on this page.  
+
+- First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.  
+- Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
 
 
 
@@ -89,17 +92,19 @@ pols_month_number
 
 #Clean the data in snp.csv
 
-
 snp_stock =
   read_csv("./data/fivethirtyeight_datasets/snp.csv") %>%
   janitor::clean_names() %>% 
-  mutate(date = as.Date(date, "%m/%d/%y")) %>% 
+  # mutate(date = as.Date(date, "%m/%d/%y")) %>%
   separate(
-    col = date, into = c("year", "month", "day"), sep = "-"
-    ) %>%
-  mutate(month = month.abb[as.numeric(month)]) %>%
-  arrange(year, month) %>%
-  relocate(year, month, everything()) %>%
+    col = date, into = c("month", "day", "year"), sep = "/"
+    ) %>% 
+  mutate(month = month.abb[as.numeric(month)]) %>% 
+  mutate(
+    year = ifelse(as.numeric(year) > 21, as.numeric(year) + 1900, as.numeric(year) + 2000)
+    ) %>% 
+  arrange(year, month) %>% 
+  relocate(year, month, everything()) %>% 
   select(-day)
 snp_stock
 
