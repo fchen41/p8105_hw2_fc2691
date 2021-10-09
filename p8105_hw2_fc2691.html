@@ -268,19 +268,9 @@ precipitation_data_clean =
 <li>First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.<br />
 </li>
 <li>Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.</li>
+<li>Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.</li>
+<li>Join the datasets by merging snp into pols, and merging unemployment into the result.</li>
 </ul>
-<pre class="r"><code>#Clean the data in pols-month.csv
-
-library(tidyr)
-pols_month_number = 
-  read_csv(&quot;./data/fivethirtyeight_datasets/pols-month.csv&quot;) %&gt;% 
-  janitor::clean_names() %&gt;% 
-  separate(
-    col = mon, into = c(&quot;year&quot;, &quot;month&quot;, &quot;day&quot;), sep = &quot;-&quot;
-    ) %&gt;% 
-  mutate(month = month.abb[as.numeric(month)]) %&gt;%
-  mutate(president = ifelse(prez_gop == 1, &quot;gop&quot;, &quot;dem&quot;)) %&gt;% 
-  select(-prez_gop, -prez_dem, -day)</code></pre>
 <pre><code>## Rows: 822 Columns: 9</code></pre>
 <pre><code>## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
@@ -289,7 +279,6 @@ pols_month_number =
 <pre><code>## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>pols_month_number</code></pre>
 <pre><code>## # A tibble: 822 × 9
 ##    year  month gov_gop sen_gop rep_gop gov_dem sen_dem rep_dem president
 ##    &lt;chr&gt; &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;    
@@ -304,20 +293,6 @@ pols_month_number =
 ##  9 1947  Sep        23      51     253      23      45     198 dem      
 ## 10 1947  Oct        23      51     253      23      45     198 dem      
 ## # … with 812 more rows</code></pre>
-<pre class="r"><code>#Clean the data in snp.csv
-
-
-snp_stock =
-  read_csv(&quot;./data/fivethirtyeight_datasets/snp.csv&quot;) %&gt;%
-  janitor::clean_names() %&gt;% 
-  mutate(date = as.Date(date, &quot;%m/%d/%y&quot;)) %&gt;% 
-  separate(
-    col = date, into = c(&quot;year&quot;, &quot;month&quot;, &quot;day&quot;), sep = &quot;-&quot;
-    ) %&gt;%
-  mutate(month = month.abb[as.numeric(month)]) %&gt;%
-  arrange(year, month) %&gt;%
-  relocate(year, month, everything()) %&gt;%
-  select(-day)</code></pre>
 <pre><code>## Rows: 787 Columns: 2</code></pre>
 <pre><code>## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
@@ -326,32 +301,20 @@ snp_stock =
 <pre><code>## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>snp_stock</code></pre>
 <pre><code>## # A tibble: 787 × 3
 ##    year  month close
 ##    &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;
-##  1 1969  Apr   104. 
-##  2 1969  Aug    95.5
-##  3 1969  Dec    92.1
-##  4 1969  Feb    98.1
-##  5 1969  Jan   103. 
-##  6 1969  Jul    91.8
-##  7 1969  Jun    97.7
-##  8 1969  Mar   102. 
-##  9 1969  May   103. 
-## 10 1969  Nov    93.8
+##  1 1950  Apr    18  
+##  2 1950  Aug    18.4
+##  3 1950  Dec    20.4
+##  4 1950  Feb    17.2
+##  5 1950  Jan    17  
+##  6 1950  Jul    17.8
+##  7 1950  Jun    17.7
+##  8 1950  Mar    17.3
+##  9 1950  May    18.8
+## 10 1950  Nov    19.5
 ## # … with 777 more rows</code></pre>
-<pre class="r"><code># Tidy the unemployment data so that it can be merged with the previous datasets.
-
-unemployment_percentage =
-  read_csv(&quot;./data/fivethirtyeight_datasets/unemployment.csv&quot;) %&gt;%
-  janitor::clean_names() %&gt;% 
-  pivot_longer(
-    jan:dec, 
-    names_to = &quot;month&quot;, 
-    values_to = &quot;month_data&quot;
-  ) %&gt;% 
-  mutate(year = as.character(year))</code></pre>
 <pre><code>## Rows: 68 Columns: 13</code></pre>
 <pre><code>## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
@@ -359,28 +322,21 @@ unemployment_percentage =
 <pre><code>## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>unemployment_percentage</code></pre>
 <pre><code>## # A tibble: 816 × 3
-##    year  month month_data
-##    &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
-##  1 1948  jan          3.4
-##  2 1948  feb          3.8
-##  3 1948  mar          4  
-##  4 1948  apr          3.9
-##  5 1948  may          3.5
-##  6 1948  jun          3.6
-##  7 1948  jul          3.6
-##  8 1948  aug          3.9
-##  9 1948  sep          3.8
-## 10 1948  oct          3.7
+##    year  month unemployment_data
+##    &lt;chr&gt; &lt;chr&gt;             &lt;dbl&gt;
+##  1 1948  Jan                 3.4
+##  2 1948  Feb                 3.8
+##  3 1948  Mar                 4  
+##  4 1948  Apr                 3.9
+##  5 1948  May                 3.5
+##  6 1948  Jun                 3.6
+##  7 1948  Jul                 3.6
+##  8 1948  Aug                 3.9
+##  9 1948  Sep                 3.8
+## 10 1948  Oct                 3.7
 ## # … with 806 more rows</code></pre>
-<pre class="r"><code>#Join the datasets by merging snp into pols, and merging unemployment into the result.
-
-pols_snp_unemployment_merge = full_join(full_join(pols_month_number, snp_stock), unemployment_percentage)</code></pre>
-<pre><code>## Joining, by = c(&quot;year&quot;, &quot;month&quot;)</code></pre>
-<pre><code>## Joining, by = c(&quot;year&quot;, &quot;month&quot;)</code></pre>
-<pre class="r"><code>pols_snp_unemployment_merge</code></pre>
-<pre><code>## # A tibble: 1,867 × 11
+<pre><code>## # A tibble: 822 × 11
 ##    year  month gov_gop sen_gop rep_gop gov_dem sen_dem rep_dem president close
 ##    &lt;chr&gt; &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
 ##  1 1947  Jan        23      51     253      23      45     198 dem          NA
@@ -393,7 +349,8 @@ pols_snp_unemployment_merge = full_join(full_join(pols_month_number, snp_stock),
 ##  8 1947  Aug        23      51     253      23      45     198 dem          NA
 ##  9 1947  Sep        23      51     253      23      45     198 dem          NA
 ## 10 1947  Oct        23      51     253      23      45     198 dem          NA
-## # … with 1,857 more rows, and 1 more variable: month_data &lt;dbl&gt;</code></pre>
+## # … with 812 more rows, and 1 more variable: unemployment_data &lt;dbl&gt;</code></pre>
+<p>pols-month.csv decribes the number of national politicians who are democratic or repunlican at any given time which including 822 observations and 9 variables. snp.csv describes the closing values of the Standard &amp; Poor’s stock market index on the associated date with 787 observations and 3 variables. During tidy process, the date was seperate to specific year and month. Unemployment.csv describes the percentage of unemployment in each month of the associated year. While changing months from columns to rows, it includes 816 observations. After joining these three tables, the final dimension of table is (822, 11), the range of years is [1947, 2015]. The tables were joined using key variables year and month.</p>
 </div>
 <div id="problem-3" class="section level2">
 <h2>Problem 3</h2>

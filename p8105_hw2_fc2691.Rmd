@@ -70,10 +70,12 @@ This problem uses the *FiveThirtyEight* data; these data were gathered to create
 
 - First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.  
 - Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
+- Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
+- Join the datasets by merging snp into pols, and merging unemployment into the result.
 
 
 
-```{r}
+```{r echo = FALSE}
 #Clean the data in pols-month.csv
 
 library(tidyr)
@@ -86,9 +88,7 @@ pols_month_number =
   mutate(month = month.abb[as.numeric(month)]) %>%
   mutate(president = ifelse(prez_gop == 1, "gop", "dem")) %>% 
   select(-prez_gop, -prez_dem, -day)
-
 pols_month_number
-
 
 #Clean the data in snp.csv
 
@@ -99,9 +99,11 @@ snp_stock =
   separate(
     col = date, into = c("month", "day", "year"), sep = "/"
     ) %>% 
-  mutate(month = month.abb[as.numeric(month)]) %>% 
+  mutate(month = month.abb[as.numeric(month)], 
+         close = round(close, 1)) %>% 
   mutate(
-    year = ifelse(as.numeric(year) > 21, as.numeric(year) + 1900, as.numeric(year) + 2000)
+    year = as.character(
+      ifelse(as.numeric(year) > 21, as.numeric(year) + 1900, as.numeric(year) + 2000))
     ) %>% 
   arrange(year, month) %>% 
   relocate(year, month, everything()) %>% 
@@ -112,22 +114,25 @@ snp_stock
 
 unemployment_percentage =
   read_csv("./data/fivethirtyeight_datasets/unemployment.csv") %>%
-  janitor::clean_names() %>% 
   pivot_longer(
-    jan:dec, 
+    Jan:Dec, 
     names_to = "month", 
-    values_to = "month_data"
+    values_to = "unemployment_data"
   ) %>% 
+  janitor::clean_names() %>%  
   mutate(year = as.character(year))
-
-unemployment_percentage
+unemployment_percentage 
 
 #Join the datasets by merging snp into pols, and merging unemployment into the result.
 
-pols_snp_unemployment_merge = full_join(full_join(pols_month_number, snp_stock), unemployment_percentage)
+pols_snp_unemployment_merge = left_join(
+  left_join(pols_month_number, snp_stock, by = c("year", "month")), 
+  unemployment_percentage, by = c("year", "month"))
 
 pols_snp_unemployment_merge
 ```
+
+pols-month.csv decribes the number of national politicians who are democratic or repunlican at any given time which including 822 observations and 9 variables. snp.csv describes the closing values of the Standard & Poor’s stock market index on the associated date with 787 observations and 3 variables. During tidy process, the date was seperate to specific year and month. Unemployment.csv describes the percentage of unemployment in each month of the associated year. While changing months from columns to rows, it includes 816 observations. After joining these three tables, the final dimension of table is (`r dim(pols_snp_unemployment_merge)`), the range of years is [`r range(pull(pols_snp_unemployment_merge, year))`]. The tables were joined using key variables year and month. 
 
 ## Problem 3  
 
