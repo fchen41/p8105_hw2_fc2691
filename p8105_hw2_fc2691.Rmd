@@ -25,15 +25,13 @@ library(readxl)
 library(tidyverse)
 library(dplyr)
 library(tidyr)
-# 
+
 # #Clean the data in Mr. Trash Wheel Sheet. 
 mr_trash_wheel_sheet =
-  readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", range = "A2:N408") %>%
+  readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", range = "A2:N534") %>%
   janitor::clean_names() %>%
   drop_na(dumpster) %>% 
-  mutate(sports_balls = round(sports_balls,0)) %>% 
-  filter(year == 2018 | year == 2019) %>% 
-  mutate(month = month.name[as.character(month)])
+  mutate(sports_balls = round(sports_balls,0))
 
 mr_trash_wheel_sheet
 
@@ -57,15 +55,21 @@ precipitation_data_clean =
   full_join(
     precipitation_data_2018, precipitation_data_2019
   ) %>% 
-  mutate(month.name = as.character(month)) %>% 
-  relocate(year, month, month.name, total)
+  mutate(month = month.name[month]) %>% 
+  relocate(year, month, total)
 
 precipitation_data_clean
-```
-`
-Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2019?
 
-`
+```
+
+In Mr.Trash Wheel sheet, there are data from 2014 to 2021 with 14 variables and 453 observations. In the joint precipitation data for 2018 and 2019, there are 24 observations and 3 variables  Among those data, it could be concluded that the total precipitation in 2018 is `r with(precipitation_data_clean, sum(total[year == 2018]))`. The median number of sports balls in dumpster in 2019 is `r with(mr_trash_wheel_sheet, median(sports_balls[year == 2019]))`.
+
+## Problem 2  
+
+This problem uses the *FiveThirtyEight* data; these data were gathered to create the interactive graphic on this page. In particular, 
+
+
+
 ```{r}
 #Clean the data in pols-month.csv
 
@@ -140,7 +144,6 @@ popular_baby_names =
     names_from = c(ethnicity),
     values_from = c(year_of_birth)
     )
-
 popular_baby_names
 
 popular_male_baby_names_count =
@@ -152,10 +155,14 @@ popular_male_baby_names_count =
     childs_first_name = str_to_title(childs_first_name)
     ) %>% 
   distinct() %>% 
-  filter(gender == "Male") %>% 
+  filter(gender == "Female") %>% 
   group_by(childs_first_name) %>%
-  summarise(total_count = sum(count)) %>% 
+  summarise(
+    total_count = sum(count), 
+    rank_avg = mean(rank)
+    ) %>% 
   arrange(desc(total_count))
+
 popular_male_baby_names_count
 ```
 
