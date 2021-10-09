@@ -2,7 +2,7 @@
 title: "p8105_hw2_fc2691"
 author: "FC"
 date: "10/3/2021"
-output: html_document
+output: github_document
 ---
 
 ## Problem 1  
@@ -142,21 +142,8 @@ Produce a well-structured, reader-friendly table showing the rank in popularity 
 Finally, for male, white non-hispanic children born in 2016, produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis).
 ```{r}
 # Load the data and remove the duplicates. 
-
-popular_baby_names =
-  read_csv("./data/Popular_Baby_Names.csv") %>%
-  janitor::clean_names() %>% 
-  distinct() %>% 
-  #Showing the rank in popularity of the name “Olivia” as a female baby name over time
-  filter(gender == "FEMALE" & childs_first_name == "Olivia") %>%
-  select(-gender) %>%
-  pivot_wider(
-    names_from = c(ethnicity),
-    values_from = c(year_of_birth)
-    )
-popular_baby_names
-
-popular_male_baby_names_count =
+library(ggplot2)
+popular_baby_names_base =
   read_csv("./data/Popular_Baby_Names.csv") %>%
   janitor::clean_names() %>% 
   mutate(
@@ -164,17 +151,49 @@ popular_male_baby_names_count =
     ethnicity = str_to_title(ethnicity), 
     childs_first_name = str_to_title(childs_first_name)
     ) %>% 
-  distinct() %>% 
-  filter(gender == "Female") %>% 
+  distinct()
+
+popular_olivia_names = popular_baby_names_base %>% 
+  #Showing the rank in popularity of the name “Olivia” as a female baby name over time
+  filter(gender == "Female" & childs_first_name == "Olivia") %>% 
+  select(-gender, -childs_first_name) %>%
+  pivot_wider(
+    names_from = c(ethnicity),
+    values_from = c(year_of_birth)
+    ) %>% 
+  relocate(rank, count, everything()) %>% 
+  knitr::kable(caption = "The popularity of the name 'Olivia' as a female baby over time")
+popular_olivia_names
+
+popular_male_baby_names_count = popular_baby_names_base %>% 
+  filter(gender == "Male") %>% 
   group_by(childs_first_name) %>%
   summarise(
     total_count = sum(count), 
     rank_avg = mean(rank)
     ) %>% 
-  arrange(desc(total_count))
-
+  arrange(rank_avg, desc(total_count))
 popular_male_baby_names_count
-```
+
+# From the table above, "Ethan" seems like the most popular name among male children over time. 
+popularity_ethan_male_names = popular_baby_names_base %>% 
+  filter(gender == "Male" & childs_first_name == "Ethan") %>% 
+  select(-gender, -childs_first_name) %>%
+  pivot_wider(
+    names_from = c(ethnicity),
+    values_from = c(year_of_birth)
+    ) %>% 
+  relocate(rank, count, everything()) %>% 
+  knitr::kable(caption = "The popularity of the name 'Ethan' as a male baby over time")
+popularity_ethan_male_names
+
+popular_baby_names_base
+
+scatter_plot_male_white_non_hispanic = popular_baby_names_base %>% 
+  filter(gender == "Male" & ethnicity == "White Non Hispanic" & year_of_birth == 2016) %>% 
+  select(-year_of_birth, -gender, -ethnicity)
+ggplot(scatter_plot_male_white_non_hispanic, aes(x = rank, y = count)) + geom_point()
+``` 
 
 
 
